@@ -56,7 +56,7 @@
                 this._index = prevIndex;
                 return;
             }
-            _Window_Selectable_select.call(this, index);
+            _Window_Selectable_select.apply(this, arguments);
         }
     };
     
