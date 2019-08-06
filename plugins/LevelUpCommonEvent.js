@@ -34,7 +34,7 @@
         
         var levelUpCommonEventId = this.levelUpCommonEventId();
         if (levelUpCommonEventId > 0) {
-            $gameTemp.reserveCommonEvent(this.levelUpCommonEventId());
+            $gameTemp.reserveCommonEvent(levelUpCommonEventId);
         }
     }
 
