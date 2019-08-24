@@ -24,6 +24,21 @@
 
     var parameters = PluginManager.parameters('RetroNameInput');
     
+    // 最後の文字まで入力したらカーソルを消す
+    var _Window_NameEdit_refresh = Window_NameEdit.prototype.refresh;
+    Window_NameEdit.prototype.refresh = function() {
+        _Window_NameEdit_refresh.apply(this, arguments);
+        if (this._index >= this._maxLength) {
+            this.setCursorRect(0, 0, 0, 0);
+        }
+    };
+    Window_NameEdit.prototype.index = function() {
+        return this._index;
+    };
+    Window_NameEdit.prototype.maxLength = function() {
+        return this._maxLength;
+    };
+    
     Window_NameInput.RETRO =
             [ 'あ','い','う','え','お',  'か','き','く','け','こ',  'さ','し','す','せ','そ',
               'た','ち','つ','て','と',  'な','に','ぬ','ね','の',  'は','ひ','ふ','へ','ほ',
@@ -205,6 +220,18 @@
             return;
         }
         _Window_NameInput_processOk.call(this);
+    };
+    
+    // 文字が最大まで入力されたらOKボタンに飛ばす
+    Window_NameInput.prototype.onNameAdd = function() {
+        if (this._editWindow.add(this.character())) {
+            SoundManager.playOk();
+            if (this._editWindow.index() == this._editWindow.maxLength()) {
+                this._index = this.okButtonIndex();
+            }
+        } else {
+            SoundManager.playBuzzer();
+        }
     };
 
 }());
