@@ -14,15 +14,63 @@
  * @plugindesc レトロゲーム風名前入力
  * @author 天神いな
  *
+ * @param Use Walk Character
+ * @type boolean
+ * @desc 顔グラの代わりに歩行グラを使用するかどうか
+ * @default false
+ *
  * @help 名前入力ウィンドウを濁点と半濁点を1文字扱いにする
  * レトロゲーム風のものに変更します。
  *
  * デフォルトのものと異なり、1画面でひらがなとカタカナを入力できます。
+ *
+ * オプションで顔グラ表示の代わりに歩行グラを使用できます。
  */
 
 (function () {
 
     var parameters = PluginManager.parameters('RetroNameInput');
+    var isUseWalkCharacter = Boolean(parameters['Use Walk Character'] === 'true' || false);
+    
+    // 顔アイコンを歩行キャラに差し替え（オプション）
+    Window_NameEdit.prototype.initialize = function(actor, maxLength) {
+        var width = this.windowWidth();
+        var height = this.windowHeight();
+        var x = (Graphics.boxWidth - width) / 2;
+        var y = (Graphics.boxHeight - (height + this.fittingHeight(9) + 8)) / 2;
+        Window_Base.prototype.initialize.call(this, x, y, width, height);
+        this._actor = actor;
+        this._name = actor.name().slice(0, this._maxLength);
+        this._index = this._name.length;
+        this._maxLength = maxLength;
+        this._defaultName = this._name;
+        this.deactivate();
+        this.refresh();
+        if (isUseWalkCharacter) {
+            ImageManager.reserveCharacter(actor.characterName());
+        } else {
+            ImageManager.reserveFace(actor.faceName());
+        }
+    };
+    Window_NameEdit.prototype.faceWidth = function() {
+        return isUseWalkCharacter ? 82 : 144;
+    };
+    Window_NameEdit.prototype.refresh = function() {
+        this.contents.clear();
+        if (isUseWalkCharacter) {
+            this.drawCharacter(this._actor.characterName(), this._actor.characterIndex(), this.left() - 38, this.windowHeight() / 2 + 8);
+        } else {
+            this.drawActorFace(this._actor, 0, 0);
+        }
+        for (var i = 0; i < this._maxLength; i++) {
+            this.drawUnderline(i);
+        }
+        for (var j = 0; j < this._name.length; j++) {
+            this.drawChar(j);
+        }
+        var rect = this.itemRect(this._index);
+        this.setCursorRect(rect.x, rect.y, rect.width, rect.height);
+    };
     
     // 最後の文字まで入力したらカーソルを消す
     var _Window_NameEdit_refresh = Window_NameEdit.prototype.refresh;
