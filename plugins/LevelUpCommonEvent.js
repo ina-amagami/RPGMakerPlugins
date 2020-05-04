@@ -14,6 +14,11 @@
  * @plugindesc レベルアップ時にコモンイベントを実行する
  * @author 天神いな
  *
+ * @param プラグイン無効化スイッチ番号
+ * @type switch
+ * @desc このスイッチがオンのときにレベルアップしても、コモンイベントを実行しない。
+ * @default 0
+ *
  * @help レベルアップ時にコモンイベントを差し込みたいキャラのメモ欄に以下追加する
  * <LevelUpCommonEvent: [コモンイベントID]>
  * (例) <LevelUpCommonEvent: 1>
@@ -21,6 +26,11 @@
 
 (function () {
 
+    var pluginName = 'LevelUpCommonEvent';
+    var parameters = PluginManager.parameters(pluginName);
+    
+    var switchNum = Number(parameters['プラグイン無効化スイッチ番号']);
+    
     var regex = /<LevelUpCommonEvent:\s*(\d+)>/i;
 
     var _Game_Actor_levelUp = Game_Actor.prototype.levelUp;
@@ -29,6 +39,11 @@
         
         // バトルテスト中は実行しない
         if (DataManager.isBattleTest()) {
+            return;
+        }
+        
+        // スイッチで無効化されている場合は実行しない
+        if (switchNum > 0 && $gameSwitches.value(switchNum)) {
             return;
         }
         
